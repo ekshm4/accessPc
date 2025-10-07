@@ -1,0 +1,22 @@
+{
+  "name": "fusion-starter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0-alpha.37",
+    "lucide-react": "^0.462.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "tailwindcss": "^4.0.0-alpha.37",
+    "vite": "^6.2.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  }
+}

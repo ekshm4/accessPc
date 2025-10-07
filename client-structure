@@ -1,0 +1,25 @@
+├── 📁 client/                     # Frontend (React)
+│   ├── App.jsx                   # Root React app
+│   ├── 📁 pages/                 # Pages for each section
+│   │   ├── Home.jsx              # Dashboard
+│   │   ├── Files.jsx             # All files view
+│   │   ├── Folders.jsx           # Folder-based navigation
+│   │   ├── Videos.jsx            # Video player view
+│   │   ├── Audio.jsx             # Music player
+│   │   ├── Images.jsx            # Image gallery
+│   │   └── Documents.jsx         # Document viewer
+│   ├── 📁 components/            # Shared UI components
+│   │   ├── MediaCard.jsx         # Displays one file's info
+│   │   ├── MediaPlayer.jsx       # Reusable video/audio player
+│   │   ├── UploadForm.jsx        # File uploader drag-drop UI
+│   │   └── Sidebar.jsx           # Navigation menu
+│   └── 📁 styles/                # CSS/Tailwind config
+
+├── 📁 local-access/              # Access tools (QR, IP check)
+│   └── qr.js                     # Generate QR code to open from phone
+
+├── 📁 config/                    # Config files
+│   └── server.config.js          # Define port, base paths, etc.
+
+└── README.md                     # How to set up and use the server
+

@@ -1,0 +1,24 @@
+├── 📁 media/                       # All your media files
+│   ├── 📁 videos/                  # Streamable videos
+│   ├── 📁 audio/                   # Streamable audio files
+│   ├── 📁 images/                  # Image files
+│   └── 📁 documents/              # PDFs, text files, etc.
+
+├── 📁 server/                      # Backend API code
+│   ├── server.js                 # Main entry point (Express app)
+│   ├── 📁 routes/                 # API route definitions
+│   │   ├── home.js               # /api/status, /api/active-users
+│   │   ├── stream.js             # /api/stream/:filename
+│   │   ├── files.js              # /api/files
+│   │   ├── folders.js            # /api/folders
+│   │   ├── upload.js             # /api/upload, /delete
+│   │   └── recommend.js          # /api/recommendations
+│   ├── 📁 utils/                  # Utility helper functions
+│   │   ├── getMimeType.js        # Maps extension to MIME type
+│   │   ├── scanFolders.js        # Recursively read media folders
+│   │   ├── getSystemStats.js     # Get CPU, RAM, Disk usage
+│   │   ├── logViewerIP.js        # Track current streaming IPs
+│   │   └── metadata.js           # Read/write media.json metadata
+│   └── 📁 database/
+│       └── media.json            # Stores metadata like views
+

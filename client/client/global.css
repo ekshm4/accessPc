@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Simple dark theme using standard TailwindCSS classes */
+body {
+  @apply bg-gray-900 text-gray-100;
+}

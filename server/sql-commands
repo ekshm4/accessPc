@@ -1,0 +1,15 @@
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'your_root_password';
+FLUSH PRIVILEGES;
+EXIT;
+
+
+CREATE USER 'appuser'@'localhost' IDENTIFIED BY 'app_password';
+GRANT ALL PRIVILEGES ON your_db_name.* TO 'appuser'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+
+
+SHOW GRANTS;
+
+SHOW GRANTS FOR 'username'@'host';
+
