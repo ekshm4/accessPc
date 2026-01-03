@@ -16,7 +16,14 @@ export default function Videos() {
   useEffect(() => {
     (async () => {
       try {
-        const response = await fetch(`${VITE_URL}/show/videos`);
+        const response = await fetch(`${VITE_URL}/show/videos`/*,{
+
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          }
+
+        }*/);
         console.log(response);
         const jsonData = await response.json();
         setData(jsonData);

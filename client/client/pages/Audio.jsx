@@ -14,7 +14,14 @@ export default function Audio() {
   useEffect(() => {
     (async () => {
       try {
-        const response = await fetch(`${VITE_URL}/show/audios`);
+        const response = await fetch(`${VITE_URL}/show/audios`/*,{
+          
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          }
+
+        }*/);
         const jsonData = await response.json();
         console.log(jsonData);
         setAudioData(jsonData);

@@ -1,0 +1,27 @@
+  useEffect(() => {
+      const baseUrl = 'https://ff6702b6ded6.ngrok-free.app';
+
+      const url = ;
+      console.log(Fetching:, url);
+      fetch(url, {
+        headers: {
+          Accept: application/json,
+          // Bypass ngrok browser warning interstitial which returns HTML
+          ngrok-skip-browser-warning: true,
+        },
+      })
+        .then(async (res) => {
+          const contentType = res.headers.get(content-type) || ;
+          console.log(Response status:, res.status, res.statusText);
+          console.log(Response content-type:, contentType);
+            const text = await res.text();
+            throw new Error(
+              ,
+            );
+          }
+          return res.json();
+        })
+        .then((data) => console.log(/health response:, data))
+        .catch((err) => console.error(Error fetching data:, err));
+    }, []);
+

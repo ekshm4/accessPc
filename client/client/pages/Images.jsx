@@ -14,7 +14,14 @@ export default function Images() {
   useEffect(() => {
     (async () => {
       try {
-        const response = await fetch(`${VITE_URL}/show/images/`);
+        const response = await fetch(`${VITE_URL}/show/images/`,{
+
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          }
+
+        });
         const jsonData = await response.json();
         setData(jsonData);
         console.log(jsonData);

@@ -9,9 +9,7 @@ export default defineConfig({
     jsx: 'automatic'
   },
   server: {
-    allowedHosts: [
-      "4f4fdb03abad.ngrok-free.app",
-    ],
+    host: "0.0.0.0",
     port: 4000
   },
 });

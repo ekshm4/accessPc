@@ -1,5 +1,5 @@
 import { FolderIcon, VideoIcon } from "lucide-react";
-import React from "react";
+import React,{ useState , useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 const { VITE_URL,VITE_PORT } = import.meta.env;
 
@@ -20,6 +20,34 @@ export default function Play() {
   //  );
  // }
 
+  const [videoSrc, setVideoSrc] = useState("");
+
+  useEffect(() => {
+    if (!watching) return;
+
+    const fetchVideo = async () => {
+      try {
+        const res = await fetch(
+          `${VITE_URL}/stream/video/${encodeURIComponent(watching)}`,
+          {
+            headers: {
+              "ngrok-skip-browser-warning": "true", // 👈 important header
+            },
+          }
+        );
+
+        const blob = await res.blob();             // Get video as blob
+        const url = URL.createObjectURL(blob);     // Create a temporary URL
+        setVideoSrc(url);
+      } catch (err) {
+        console.error("Video fetch error:", err);
+      }
+    };
+
+    fetchVideo();
+  }, [watching]);
+
+
   return (
     <div className="h-full overflow-auto">
       {/* header */}
@@ -37,13 +65,11 @@ export default function Play() {
 
       {/* video content */}
       <div className="p-6">
-        <video controls className="w-full max-w-4xl mx-auto">
-          <source
-            src={`${VITE_URL}/stream/video/${encodeURIComponent(watching)}`}
-            type="video/mp4"
-          />
+
+        <video controls className="w-full max-w-4xl mx-auto" src={videoSrc}>
           Your browser does not support the video tag.
-        </video>
+        </video>   
+
       </div>
     </div>
   );

@@ -59,14 +59,56 @@ const { VITE_URL }  = import.meta.env;
 
 export default function Home() {
   
+  
+  /*useEffect(() => {
+    const baseUrl = "https://ff6702b6ded6.ngrok-free.app";
+
+    const url = `${baseUrl}/`;
+    console.log("Fetching:", url);
+    fetch(url, {
+      headers: {
+        Accept: "application/json",
+        // Bypass ngrok browser warning interstitial which returns HTML
+        "ngrok-skip-browser-warning": "true",
+      },
+    })
+      .then(async (res) => {
+        const contentType = res.headers.get("content-type") || "";
+        console.log("Response status:", res.status, res.statusText);
+        console.log("Response content-type:", contentType);
+        if (!contentType.includes("application/json")) {
+          const text = await res.text();
+          throw new Error(
+            `Expected JSON but received: ${contentType}. First 100 chars: ${text.substring(
+              0,
+              100,
+            )}`,
+          );
+        }
+        return res.json();
+      })
+      .then((data) => console.log("/health response:", data))
+      .catch((err) => console.error("Error fetching data:", err));
+  }, []);*/
+
+
+
 
   useEffect(() => {
-    fetch(`${VITE_URL}/`)
-      .then(res => res.json())
-      .then(data => console.log(data))
-      .catch(err => console.error("Error fetching data:", err));
+    // const url = "https://ff6702b6ded6.ngrok-free.app/";
+
+    fetch(VITE_URL/*, {
+      headers: {
+        Accept: "application/json",
+        "ngrok-skip-browser-warning": "true",
+      },
+    }*/)
+      .then((res) => res.json()) // parse JSON
+      .then((data) => console.log("Response:", data))
+      .catch((err) => console.error("Fetch error:", err));
   }, []);
-    
+
+
 
   return (
     <div className="h-full overflow-auto">

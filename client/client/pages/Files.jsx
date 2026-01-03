@@ -32,7 +32,13 @@ export default function Files() {
   const fetchResults = async (selectedDocument) => {
     setIsLoadingDisplay(true);
     try {
-      const response = await fetch(`${VITE_URL}/stream/documents/${encodeURIComponent(selectedDocument)}`);
+      const response = await fetch(`${VITE_URL}/stream/documents/${encodeURIComponent(selectedDocument)}`,{
+
+        headers: {
+          Accept: "application/json",
+          "ngrok-skip-browser-warning": "true",
+        }
+      });
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const jsonData = await response.json();
       setDisplayFile(jsonData);
