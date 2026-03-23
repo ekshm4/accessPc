@@ -11,6 +11,7 @@ import {
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
   MenuIcon,
+  FileText,
 } from 'lucide-react';
 
 const navigationItems = [
@@ -20,6 +21,7 @@ const navigationItems = [
   { name: 'Images', href: '/images', icon: ImageIcon },
   { name: 'Audio', href: '/audio', icon: AudioIcon },
   { name: 'Videos', href: '/videos', icon: VideoIcon },
+  { name: 'Documents', href: '/documents', icon: FileText },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {

@@ -14,6 +14,7 @@ import NotFound from './pages/NotFound';
 import Play from './pages/playing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Documents from './pages/Documents';
 
 function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -108,6 +109,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <Layout>
               <Images />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/documents"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Documents />
             </Layout>
           </ProtectedRoute>
         }

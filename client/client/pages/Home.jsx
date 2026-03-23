@@ -39,7 +39,7 @@ export default function Home() {
     { name: 'Videos', count: stats?.byType?.videos || 0, icon: VideoIcon, href: '/videos', color: 'text-red-400' },
     { name: 'Images', count: stats?.byType?.images || 0, icon: ImageIcon, href: '/images', color: 'text-green-400' },
     { name: 'Audio', count: stats?.byType?.audios || 0, icon: AudioIcon, href: '/audio', color: 'text-purple-400' },
-    { name: 'Documents', count: stats?.byType?.documents || 0, icon: FileTextIcon, href: '/files', color: 'text-blue-400' },
+    { name: 'Documents', count: stats?.byType?.documents || 0, icon: FileTextIcon, href: '/documents', color: 'text-blue-400' },
   ];
 
   return (

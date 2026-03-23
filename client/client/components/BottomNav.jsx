@@ -4,12 +4,13 @@ import {
   FolderIcon,
   ImageIcon,
   VideoIcon,
+  FileText,
 } from 'lucide-react';
 
 const navItems = [
   { name: 'Home', href: '/', icon: HomeIcon },
   { name: 'Browse', href: '/folders', icon: FolderIcon },
-  { name: 'Images', href: '/images', icon: ImageIcon },
+  { name: 'Docs', href: '/documents', icon: FileText },
   { name: 'Videos', href: '/videos', icon: VideoIcon },
 ];
 

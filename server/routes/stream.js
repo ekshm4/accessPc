@@ -53,28 +53,30 @@ router.get('/:type/:filename', optionalAuth, (req, res) => {
   let filePath;
   if (type === 'file') {
     filePath = path.join(FOLDER_BASE, filename);
+  } else if (type === 'document') {
+    filePath = path.join(FOLDER_BASE, 'documents', filename);
   } else {
     filePath = path.join(FOLDER_BASE, type + 's', filename);
   }
 
-  if (type === 'document') {
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'File not found' });
-    }
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(FOLDER_BASE, filename);
+  }
 
-    const ext = path.extname(filePath).toLowerCase();
-    const textExtensions = ['.txt', '.md', '.json', '.xml', '.csv', '.html', '.css', '.js', '.ts'];
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'File not found' });
+  }
 
-    if (textExtensions.includes(ext)) {
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-          return res.status(500).json({ error: 'Failed to read file' });
-        }
-        res.json({ name: filename, content: data, type: 'text' });
-      });
-    } else {
-      streamFile(filePath, req, res);
-    }
+  const ext = path.extname(filePath).toLowerCase();
+  const textExtensions = ['.txt', '.md', '.json', '.xml', '.csv', '.html', '.css', '.js', '.ts'];
+
+  if (textExtensions.includes(ext) || !ext) {
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to read file' });
+      }
+      res.json({ name: filename, content: data, type: 'text' });
+    });
   } else {
     streamFile(filePath, req, res);
   }

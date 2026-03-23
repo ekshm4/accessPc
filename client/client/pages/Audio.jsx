@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Music, Play, Pause, RefreshCw } from 'lucide-react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { LoadingScreen } from '../components/ui/Spinner';
@@ -10,7 +10,7 @@ export default function Audio() {
   const [loading, setLoading] = useState(true);
   const [currentAudio, setCurrentAudio] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = { current: null };
+  const audioRef = useRef(null);
 
   const fetchAudios = async () => {
     setLoading(true);
@@ -34,6 +34,13 @@ export default function Audio() {
   };
 
   const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+    }
     setIsPlaying(!isPlaying);
   };
 

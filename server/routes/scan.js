@@ -30,6 +30,7 @@ function getMediaType(filename) {
   if (AUDIO_EXTENSIONS.includes(ext)) return 'audio';
   if (IMAGE_EXTENSIONS.includes(ext)) return 'image';
   if (DOCUMENT_EXTENSIONS.includes(ext)) return 'document';
+  if (!ext && !filename.includes('.')) return 'document';
   return null;
 }
 
