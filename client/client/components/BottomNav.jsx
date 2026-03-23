@@ -5,13 +5,16 @@ import {
   ImageIcon,
   VideoIcon,
   FileText,
+  Music,
+  SettingsIcon,
 } from 'lucide-react';
 
 const navItems = [
   { name: 'Home', href: '/', icon: HomeIcon },
   { name: 'Browse', href: '/folders', icon: FolderIcon },
-  { name: 'Docs', href: '/documents', icon: FileText },
+  { name: 'Audio', href: '/audio', icon: Music },
   { name: 'Videos', href: '/videos', icon: VideoIcon },
+  { name: 'Settings', href: '/settings', icon: SettingsIcon },
 ];
 
 export default function BottomNav() {
