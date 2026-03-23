@@ -2,11 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   HomeIcon,
   FolderIcon,
-  ImageIcon,
-  VideoIcon,
   FileText,
   Music,
-  SettingsIcon,
+  VideoIcon,
 } from 'lucide-react';
 
 const navItems = [
@@ -15,7 +13,6 @@ const navItems = [
   { name: 'Docs', href: '/documents', icon: FileText },
   { name: 'Audio', href: '/audio', icon: Music },
   { name: 'Videos', href: '/videos', icon: VideoIcon },
-  { name: 'Settings', href: '/settings', icon: SettingsIcon },
 ];
 
 export default function BottomNav() {

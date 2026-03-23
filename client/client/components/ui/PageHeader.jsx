@@ -1,10 +1,12 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, SettingsIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function PageHeader({ 
   icon: Icon, 
   title, 
   description, 
-  breadcrumbs = [] 
+  breadcrumbs = [],
+  action 
 }) {
   return (
     <div className="border-b border-border bg-background/95 backdrop-blur">
@@ -22,9 +24,20 @@ export function PageHeader({
             ))}
           </div>
         )}
-        <div className="flex items-center gap-2">
-          {Icon && <Icon className="w-5 h-5 text-muted-foreground" />}
-          <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {Icon && <Icon className="w-5 h-5 text-muted-foreground" />}
+            <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {action}
+            <Link
+              to="/settings"
+              className="lg:hidden p-2 hover:bg-muted rounded-lg transition-colors"
+            >
+              <SettingsIcon className="w-5 h-5 text-muted-foreground" />
+            </Link>
+          </div>
         </div>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
