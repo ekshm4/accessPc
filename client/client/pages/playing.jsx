@@ -1,77 +1,73 @@
-import { FolderIcon, VideoIcon } from "lucide-react";
-import React,{ useState , useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-const { VITE_URL,VITE_PORT } = import.meta.env;
+import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { VideoIcon, ArrowLeft } from 'lucide-react';
+import { PageHeader } from '../components/ui/PageHeader';
+import { Button } from '../components/ui/Button';
+import { stream } from '../../lib/api';
 
 export default function Play() {
-  const location = useLocation();
   const navigate = useNavigate();
-
-  const { filename, mimetype } = location.state || {};
-  console.log("location state", location.state);
-  const watching = localStorage.getItem("playing");
-  
-
-  //if (!filename || !mimetype) {
-  //  return (
-  //    <div className="p-6 text-red-500">
-  //      No video selected. <button onClick={() => navigate("/")}>Go back</button>
-  //    </div>
-  //  );
- // }
-
-  const [videoSrc, setVideoSrc] = useState("");
+  const videoRef = useRef(null);
 
   useEffect(() => {
-    if (!watching) return;
+    const saved = localStorage.getItem('playing');
+    if (!saved) {
+      navigate('/');
+    }
+  }, [navigate]);
 
-    const fetchVideo = async () => {
-      try {
-        const res = await fetch(
-          `${VITE_URL}/stream/video/${encodeURIComponent(watching)}`,
-          {
-            headers: {
-              "ngrok-skip-browser-warning": "true", // 👈 important header
-            },
-          }
-        );
+  const getVideoInfo = () => {
+    const saved = localStorage.getItem('playing');
+    if (!saved) return null;
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return { filename: saved, mimetype: 'video/mp4' };
+    }
+  };
 
-        const blob = await res.blob();             // Get video as blob
-        const url = URL.createObjectURL(blob);     // Create a temporary URL
-        setVideoSrc(url);
-      } catch (err) {
-        console.error("Video fetch error:", err);
-      }
-    };
+  const video = getVideoInfo();
 
-    fetchVideo();
-  }, [watching]);
-
+  if (!video) {
+    return null;
+  }
 
   return (
     <div className="h-full overflow-auto">
-      {/* header */}
-      <div className="border-b border-gray-700 bg-gray-900/95 backdrop-blur">
-        <div className="flex items-center gap-2 px-6 py-4">
-          <FolderIcon className="w-5 h-5 text-gray-400" />
-          <span className="text-sm text-gray-400">/</span>
-           <div className="flex items-center gap-2">
-            <VideoIcon className="w-5 h-5 text-gray-100" />
-            <span className="text-sm font-medium text-gray-100">playing</span>
-            <p className="text-sm text-gray-400">{filename}</p>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        icon={VideoIcon}
+        title="Now Playing"
+        breadcrumbs={['Videos', video.filename]}
+      />
 
-      {/* video content */}
       <div className="p-6">
+        <div className="mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+        </div>
 
-        <video controls className="w-full max-w-4xl mx-auto" src={videoSrc}>
+        <video
+          ref={videoRef}
+          controls
+          autoPlay
+          preload="metadata"
+          className="w-full max-w-5xl mx-auto rounded-lg"
+          src={stream.getVideoUrl(video.filename)}
+        >
           Your browser does not support the video tag.
-        </video>   
+        </video>
 
+        <div className="mt-4 text-center">
+          <p className="text-lg font-medium text-foreground">{video.filename}</p>
+        </div>
       </div>
     </div>
   );
 }
-

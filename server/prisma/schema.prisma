@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int           @id @default(autoincrement())
+  username  String        @unique @db.VarChar(255)
+  email     String        @unique @db.VarChar(255)
+  password  String        @db.Text
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  watchHistory WatchHistory[]
+  sessions  UserSession[]
+
+  @@map("users")
+}
+
+model MediaFile {
+  id            Int           @id @default(autoincrement())
+  name          String        @db.VarChar(255)
+  path          String        @unique @db.VarChar(512)
+  fileType      String        @db.VarChar(50)
+  mimeType      String?       @db.VarChar(100)
+  size          Int
+  sizeFormatted String?       @db.VarChar(50)
+  duration      Int?
+  durationFormatted String?   @db.VarChar(20)
+  folderId      Int?
+  folder        Folder?       @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  createdAt     DateTime      @default(now())
+  watchHistory  WatchHistory[]
+
+  @@map("media_files")
+}
+
+model Folder {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(255)
+  path      String     @unique @db.VarChar(512)
+  parentId  Int?
+  parent    Folder?    @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[]   @relation("FolderHierarchy")
+  files     MediaFile[]
+  createdAt DateTime   @default(now())
+
+  @@map("folders")
+}
+
+model WatchHistory {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaFileId     Int
+  mediaFile       MediaFile @relation(fields: [mediaFileId], references: [id], onDelete: Cascade)
+  progress        Float    @default(0)
+  completed       Boolean  @default(false)
+  watchedAt       DateTime @default(now())
+
+  @@unique([userId, mediaFileId])
+  @@map("watch_history")
+}
+
+model UserSession {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique @db.VarChar(512)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("user_sessions")
+}

@@ -1,81 +1,17 @@
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const mime = require('mime-types');
+const { optionalAuth } = require('../middleware/auth');
 
-const express = require("express");
-const route = express.Router();
-const fs = require("fs");
-const path = require("path");
-const mime = require("mime-types");
+const router = express.Router();
 
-const AUDIO_FILE = path.join(__dirname, '../folder/audio');
-const VIDEO_FILE = path.join(__dirname, '../folder/videos');
-const DOCUMENT_FILE = path.join(__dirname, '../folder/documents');
-const IMAGE_FILE = path.join(__dirname, '../folder/images');
+const FOLDER_BASE = path.join(__dirname, '../folder');
 
-
-
-
-//Documents streaming route
-route.get('/documents/:filename', (req,res) => {
-  const filename = path.basename(req.params.filename);
-  const filePath = path.join(DOCUMENT_FILE,filename);
-
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      return res.status(404).json({ error: "file not found"});
-      console.log(err);
-    }
-    res.send({ name: filename, content: data });
-  });  
-});
-
-
-//Images streaming route
-route.get('/images/:filename', (req,res) => {
-  const filename = path.basename(req.params.filename);
-  const filePath = path.join(IMAGE_FILE,filename);
-
-  console.log("streamFile", filePath);
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send("image not found");
-  }
-
-  const contentType = mime.lookup(filePath) || 'application/octet-stream';
-  res.setHeader('Content-Type', contentType);
-  fs.createReadStream(filePath).pipe(res);
-})
-
-
-
-
-//Audio streaming route
-route.get('/audio/:filename', (req, res) => {
-  const filename = path.basename(req.params.filename);
-  const filePath = path.join(AUDIO_FILE, filename);
-
-  
-  console.log("streamFile", filePath);
-  console.log("Range", req.headers.range);
-  
-  streamFile(filePath, req, res);
-});
-
-
-
-
-//Video streaming route
-route.get('/video/:filename', (req, res) => {
-  const filename = path.basename (req.params.filename);
-  const filePath = path.join(VIDEO_FILE, filename);
-
-  
-  console.log("streamFile", filePath);
-  console.log("Range", req.headers.range);
-  streamFile(filePath, req, res);
-});
-
-//streaming function
 function streamFile(filePath, req, res) {
   if (!fs.existsSync(filePath)) {
-    return res.status(404).send("File not found");
+    console.log('File not found:', filePath);
+    return res.status(404).json({ error: 'File not found' });
   }
 
   const stat = fs.statSync(filePath);
@@ -83,32 +19,65 @@ function streamFile(filePath, req, res) {
   const range = req.headers.range;
   const contentType = mime.lookup(filePath) || 'application/octet-stream';
 
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Content-Type', contentType);
+
   if (range) {
-    const [startStr,endStr] = range.replace(/bytes=/, '').split('-');
+    const [startStr, endStr] = range.replace(/bytes=/, '').split('-');
     const start = parseInt(startStr, 10);
     const end = endStr ? parseInt(endStr, 10) : fileSize - 1;
     const chunkSize = end - start + 1;
 
-    const file = fs.createReadStream(filePath, { start, end });
-
     res.writeHead(206, {
       'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-      'Accept-Ranges': 'bytes',
       'Content-Length': chunkSize,
-      'Content-Type': contentType
     });
 
-    file.pipe(res);
+    fs.createReadStream(filePath, { start, end }).pipe(res);
   } else {
     res.writeHead(200, {
       'Content-Length': fileSize,
-      'Content-Type': contentType
     });
-
     fs.createReadStream(filePath).pipe(res);
   }
-
-  
 }
 
-module.exports = route;
+router.get('/:type/:filename', optionalAuth, (req, res) => {
+  const { type, filename } = req.params;
+  
+  const validTypes = ['video', 'audio', 'image', 'document', 'file'];
+  if (!validTypes.includes(type)) {
+    return res.status(400).json({ error: 'Invalid type' });
+  }
+
+  let filePath;
+  if (type === 'file') {
+    filePath = path.join(FOLDER_BASE, filename);
+  } else {
+    filePath = path.join(FOLDER_BASE, type + 's', filename);
+  }
+
+  if (type === 'document') {
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const ext = path.extname(filePath).toLowerCase();
+    const textExtensions = ['.txt', '.md', '.json', '.xml', '.csv', '.html', '.css', '.js', '.ts'];
+
+    if (textExtensions.includes(ext)) {
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+          return res.status(500).json({ error: 'Failed to read file' });
+        }
+        res.json({ name: filename, content: data, type: 'text' });
+      });
+    } else {
+      streamFile(filePath, req, res);
+    }
+  } else {
+    streamFile(filePath, req, res);
+  }
+});
+
+module.exports = router;

@@ -1,23 +1,49 @@
-const db = require("./connectdb.js");
-const express = require("express");
-const bcrypt = require("bcrypt");
-const route = express.Router();
+const express = require('express');
+const bcrypt = require('bcrypt');
+const { prisma } = require('./db');
+const { registerSchema, validate } = require('../utils/validation');
 
-route.post('/register', async (req,res) => {  
-  const {username,email,password} = req.body || {};
+const router = express.Router();
 
-  if (!username || !email || !password) {
-    return res.sendStatus(400).json({error : "missing data"});
+router.post('/register', validate(registerSchema), async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ username }, { email }],
+      },
+    });
+
+    if (existingUser) {
+      const field = existingUser.username === username ? 'username' : 'email';
+      return res.status(409).json({ error: `User with this ${field} already exists` });
+    }
+
+    const hashpass = await bcrypt.hash(password, 12);
+
+    const user = await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashpass,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      user,
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Failed to create user' });
   }
-
-  const hashpass = await bcrypt.hash(password, 10);
-
-  db.query('INSERT INTO users (username,email,password) VALUES (?,?,?)', [username,email,hashpass], (err) => {
-    if (err) throw res.sendStatus(500).json({error : "error creating user in db"});
-
-    res.sendStatus(200).json({message: "Sign Up successfully"});
-    
-  })
 });
 
-module.exports = route;
+module.exports = router;

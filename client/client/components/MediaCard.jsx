@@ -1,4 +1,4 @@
-import { FileIcon, VideoIcon, ImageIcon, Music as AudioIcon, FileTextIcon } from "lucide-react";
+import { FileIcon, VideoIcon, ImageIcon, Music as AudioIcon, FileTextIcon, Folder as FolderIcon } from 'lucide-react';
 
 const typeIcons = {
   video: VideoIcon,
@@ -6,6 +6,7 @@ const typeIcons = {
   image: ImageIcon,
   document: FileTextIcon,
   file: FileIcon,
+  folder: FolderIcon,
 };
 
 export default function MediaCard({ 
@@ -14,18 +15,18 @@ export default function MediaCard({
   size, 
   duration, 
   thumbnail, 
-  onClick 
+  onClick,
+  className = '',
 }) {
-  const Icon = typeIcons[type];
+  const Icon = typeIcons[type] || FileIcon;
 
   return (
     <div
-      className="group bg-gray-800 border border-gray-700 rounded-lg p-4 hover:bg-gray-700 hover:border-gray-600 transition-colors cursor-pointer"
+      className={`group bg-card border border-border rounded-lg p-4 hover:bg-muted hover:border-accent transition-colors cursor-pointer ${className}`}
       onClick={onClick}
     >
       <div className="flex items-center gap-3">
-        {/* Icon or thumbnail */}
-        <div className="flex-shrink-0 w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center">
+        <div className="flex-shrink-0 w-10 h-10 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
           {thumbnail ? (
             <img 
               src={thumbnail} 
@@ -33,38 +34,30 @@ export default function MediaCard({
               className="w-full h-full object-cover rounded-lg"
             />
           ) : (
-            <Icon className="w-5 h-5 text-gray-400" />
+            <Icon className="w-5 h-5 text-muted-foreground" />
           )}
         </div>
 
-        {/* File info */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-gray-100 truncate group-hover:text-white">
+          <h3 className="text-sm font-medium text-foreground truncate group-hover:text-white">
             {name}
           </h3>
           <div className="flex items-center gap-2 mt-1">
             {size && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-muted-foreground">
                 {size}
               </span>
             )}
             {duration && (
               <>
-                {size && <span className="text-xs text-gray-400">•</span>}
-                <span className="text-xs text-gray-400">
+                {size && <span className="text-xs text-muted-foreground">•</span>}
+                <span className="text-xs text-muted-foreground">
                   {duration}
                 </span>
               </>
             )}
           </div>
         </div>
-
-        {/* Type indicator for videos */}
-        {type === "video" && (
-          <div className="flex-shrink-0">
-            <VideoIcon className="w-4 h-4 text-gray-400" />
-          </div>
-        )}
       </div>
     </div>
   );

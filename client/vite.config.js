@@ -1,15 +1,18 @@
-import { defineConfig } from 'vite'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from 'vite';
+import path from 'path';
 
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-  ],
+  plugins: [],
   esbuild: {
-    jsx: 'automatic'
+    jsx: 'automatic',
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './client'),
+    },
   },
   server: {
-    host: "0.0.0.0",
-    port: 4000
+    host: '0.0.0.0',
+    port: 4000,
   },
 });

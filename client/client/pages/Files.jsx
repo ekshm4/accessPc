@@ -1,134 +1,175 @@
-import { FileIcon, FolderIcon, X } from "lucide-react";
-import { useEffect, useState, useRef } from 'react';
-import MediaCard from '../components/MediaCard';
-const {VITE_URL} = import.meta.env;
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FolderIcon, FileIcon, VideoIcon, ImageIcon, Music, FileText, RefreshCw, Filter } from 'lucide-react';
+import { PageHeader } from '../components/ui/PageHeader';
+import { LoadingScreen } from '../components/ui/Spinner';
+import { Button } from '../components/ui/Button';
+import { media } from '../../lib/api';
+
+const typeIcons = {
+  video: VideoIcon,
+  image: ImageIcon,
+  audio: Music,
+  document: FileText,
+};
+
+const typeFilters = [
+  { type: 'all', label: 'All', icon: FolderIcon },
+  { type: 'video', label: 'Videos', icon: VideoIcon },
+  { type: 'audio', label: 'Audio', icon: Music },
+  { type: 'image', label: 'Images', icon: ImageIcon },
+  { type: 'document', label: 'Documents', icon: FileText },
+];
 
 export default function Files() {
-  const [data, setData] = useState([]);
-  const [isClosed, setIsClosed] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedDoc, setSelectedDoc] = useState(localStorage.getItem("selectedDoc") || null);
-  const [isLoadingDisplay, setIsLoadingDisplay] = useState(true);
-  const [displayFile, setDisplayFile] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const navigate = useNavigate();
 
-  // Fetch list of documents on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await fetch(`${VITE_URL}/show/documents`);
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        const jsonData = await response.json();
-        setData(jsonData);
-        console.log("Documents list:", jsonData);
-      } catch (e) {
-        console.error("Failed to fetch documents list", e);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, []);
-
-  // Fetch the content of selected document
-  const fetchResults = async (selectedDocument) => {
-    setIsLoadingDisplay(true);
+  const fetchFiles = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`${VITE_URL}/stream/documents/${encodeURIComponent(selectedDocument)}`,{
-
-        headers: {
-          Accept: "application/json",
-          "ngrok-skip-browser-warning": "true",
-        }
-      });
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-      const jsonData = await response.json();
-      setDisplayFile(jsonData);
-    } catch (e) {
-      console.error("Failed to get display data", e);
-      setDisplayFile(null);
+      const data = await media.getAll({ limit: 500 });
+      setFiles(data.files || []);
+    } catch (error) {
+      console.error('Failed to fetch files:', error);
     } finally {
-      setIsLoadingDisplay(false);
+      setLoading(false);
     }
   };
 
-  // On mount, if there's a saved selectedDoc, fetch its content
   useEffect(() => {
-    if (selectedDoc) {
-      fetchResults(selectedDoc);
-      setIsClosed(false); // Show display panel if there is a saved doc
-    }
+    fetchFiles();
   }, []);
 
-  // Toggle display panel visibility
-  const toggleMediaDoc = () => {
-    setIsClosed(!isClosed);
+  const filteredFiles = filter === 'all' 
+    ? files 
+    : files.filter(f => f.fileType === filter);
+
+  const handleFileClick = (file) => {
+    if (file.fileType === 'video') {
+      localStorage.setItem('playing', JSON.stringify({
+        filename: file.name,
+        mimetype: file.mimeType,
+        id: file.id,
+      }));
+      navigate('/playing');
+    } else if (file.fileType === 'audio') {
+      localStorage.setItem('playingAudio', JSON.stringify(file));
+      navigate('/audio');
+    } else if (file.fileType === 'image') {
+      localStorage.setItem('viewingImage', JSON.stringify(file));
+      navigate('/images');
+    }
   };
 
-  if (isLoading) {
+  const getFileIcon = (type) => {
+    const Icon = typeIcons[type] || FileIcon;
+    return <Icon className="w-5 h-5" />;
+  };
+
+  if (loading) {
     return (
-      <div className="text-sm flex items-center justify-center h-full">
-        loading...
+      <div className="h-full">
+        <PageHeader
+          icon={FolderIcon}
+          title="All Files"
+          breadcrumbs={['All Files']}
+        />
+        <div className="flex items-center justify-center h-[calc(100%-60px)]">
+          <LoadingScreen text="Loading files..." />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="h-full overflow-auto">
-      {/* Header */}
-      <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center gap-2 px-6 py-4">
-          <FolderIcon className="w-5 h-5 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">/</span>
-          <div className="flex items-center gap-2">
-            <FileIcon className="w-5 h-5 text-foreground" />
-            <span className="text-sm font-medium text-foreground">Files</span>
-          </div>
+      <PageHeader
+        icon={FolderIcon}
+        title="All Files"
+        breadcrumbs={['All Files']}
+        action={
+          <Button size="sm" onClick={fetchFiles}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        }
+      />
+
+      <div className="px-6 py-4 border-b border-border">
+        <div className="flex items-center gap-2 overflow-x-auto">
+          <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          {typeFilters.map(({ type, label, icon: Icon }) => (
+            <button
+              key={type}
+              onClick={() => setFilter(type)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
+                filter === type
+                  ? 'bg-accent text-white'
+                  : 'bg-muted text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Documents list */}
       <div className="p-6">
-        <div className="space-y-2">
-          {Array.isArray(data) && data.length > 0 ? (
-            data.map((docus) => (
-              <MediaCard
-                key={docus.id}
-                name={docus.name}
-                type="document"
-                size={docus.size}
-                onClick={() => {
-                  localStorage.setItem("selectedDoc", docus.name);
-                  setSelectedDoc(docus.name);
-                  fetchResults(docus.name);
-                  setIsClosed(false); // open display panel on click
-                }}
-              />
-            ))
-          ) : (
-            <div>No documents found.</div>
-          )}
-        </div>
-      </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          {filteredFiles.length} {filter === 'all' ? 'files' : filter + 's'}
+        </p>
 
-      {/* Document display panel */}
-      {selectedDoc && (
-        <div
-          className={`${isClosed ? 'invisible' : 'visible'} absolute bottom-0 left-[50%] transform -translate-x-[50%] z-50 backdrop-blur-md bg-black/30 border-t border-white/10 shadow-xl px-4 py-4 flex flex-col items-center justify-between gap-4 h-[100vh] w-[90%]`}
-        >
-          <div className="text-white text-sm px-2 font-medium">
-            Document name: {selectedDoc}
+        {filteredFiles.length > 0 ? (
+          <div className="space-y-2">
+            {filteredFiles.map((file) => (
+              <div
+                key={file.id}
+                onClick={() => handleFileClick(file)}
+                className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg hover:border-accent cursor-pointer transition-colors group"
+              >
+                <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                  file.fileType === 'video' ? 'bg-red-500/20 text-red-400' :
+                  file.fileType === 'audio' ? 'bg-purple-500/20 text-purple-400' :
+                  file.fileType === 'image' ? 'bg-green-500/20 text-green-400' :
+                  'bg-blue-500/20 text-blue-400'
+                }`}>
+                  {getFileIcon(file.fileType)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate group-hover:text-white">
+                    {file.name}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-muted-foreground">{file.sizeFormatted}</span>
+                    {file.durationFormatted && (
+                      <>
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <span className="text-xs text-muted-foreground">{file.durationFormatted}</span>
+                      </>
+                    )}
+                    <span className="text-xs text-muted-foreground">•</span>
+                    <span className="text-xs text-muted-foreground capitalize">{file.fileType}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="w-[50%] h-[100vh] overflow-auto rounded-lg bg-white p-4 text-black whitespace-pre-wrap">
-            {isLoadingDisplay ? "loading..." : displayFile?.content || "No content to display."}
+        ) : (
+          <div className="text-center py-12">
+            <FolderIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-4">
+              {filter === 'all' ? 'No files found' : `No ${filter} files found`}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Click "Scan" in the Folders page to scan your media library
+            </p>
           </div>
-          <button
-            className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-            onClick={toggleMediaDoc}
-          >
-            <X className="w-5 h-5 text-gray-300" />
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
-

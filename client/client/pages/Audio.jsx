@@ -1,113 +1,159 @@
-import { VolumeXIcon as AudioIcon, FolderIcon } from "lucide-react";
-import MediaCard from "../components/MediaCard.jsx";
-import {useState, useEffect, useRef} from "react";
-import { X } from "lucide-react";
-const {VITE_URL, VITE_PORT} = import.meta.env;
+import { useState, useEffect } from 'react';
+import { Music, Play, Pause, RefreshCw } from 'lucide-react';
+import { PageHeader } from '../components/ui/PageHeader';
+import { LoadingScreen } from '../components/ui/Spinner';
+import { Button } from '../components/ui/Button';
+import { media, stream } from '../../lib/api';
 
 export default function Audio() {
-  const [isClosed, setClosedClicked] = useState(false); 
-  const [audioData, setAudioData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [audioPlaying, setAudioPlaying] = useState(localStorage.getItem("audioPlaying") || null);
-  const audioRef = useRef(null);
+  const [audios, setAudios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentAudio, setCurrentAudio] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = { current: null };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await fetch(`${VITE_URL}/show/audios`/*,{
-          
-          headers: {
-            Accept: "application/json",
-            "ngrok-skip-browser-warning": "true",
-          }
-
-        }*/);
-        const jsonData = await response.json();
-        console.log(jsonData);
-        setAudioData(jsonData);
-      } catch (e) {
-        console.error("err occured can't fetch data", e);
-      } finally {
-        setIsLoading(false);
-      }
-            
-    })();
-  },[]);
-  
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.play().catch(err => {
-        console.warn("Autoplay blocked", err);
-      });
+  const fetchAudios = async () => {
+    setLoading(true);
+    try {
+      const data = await media.getAudios();
+      setAudios(data);
+    } catch (error) {
+      console.error('Failed to fetch audios:', error);
+    } finally {
+      setLoading(false);
     }
-  },[audioPlaying]);
-  
+  };
 
-  if (isLoading) {
+  useEffect(() => {
+    fetchAudios();
+  }, []);
+
+  const handleAudioClick = (audio) => {
+    setCurrentAudio(audio);
+    setIsPlaying(true);
+  };
+
+  const togglePlay = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const closePlayer = () => {
+    setCurrentAudio(null);
+    setIsPlaying(false);
+  };
+
+  if (loading) {
     return (
-      <div className="align-center justify-center text-sm">loading ...</div>
-    )
+      <div className="h-full">
+        <PageHeader
+          icon={Music}
+          title="Audio"
+          breadcrumbs={['Audio']}
+        />
+        <div className="flex items-center justify-center h-[calc(100%-60px)]">
+          <LoadingScreen text="Loading audio..." />
+        </div>
+      </div>
+    );
   }
 
-  const toggleMediaPlayer = () => {
-    setClosedClicked(!isClosed);
-  }
-  
   return (
     <div className="h-full overflow-auto">
-      
-      {/* Header */}
-      <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center gap-2 px-6 py-4">
-          <FolderIcon className="w-5 h-5 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">/</span>
-          <div className="flex items-center gap-2">
-            <AudioIcon className="w-5 h-5 text-foreground" />
-            <span className="text-sm font-medium text-foreground">Audio</span>
+      <PageHeader
+        icon={Music}
+        title="Audio"
+        breadcrumbs={['Audio']}
+        action={
+          <Button size="sm" onClick={fetchAudios}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        }
+      />
+
+      <div className="p-6 pb-32">
+        {audios.length > 0 ? (
+          <div className="space-y-2">
+            {audios.map((audio) => (
+              <div
+                key={audio.id}
+                onClick={() => handleAudioClick(audio)}
+                className={`flex items-center gap-4 p-4 bg-card border rounded-lg cursor-pointer transition-colors ${
+                  currentAudio?.id === audio.id
+                    ? 'border-accent bg-accent/10'
+                    : 'border-border hover:border-accent'
+                }`}
+              >
+                <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                  <Music className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{audio.name}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-muted-foreground">{audio.sizeFormatted}</span>
+                    {audio.durationFormatted && (
+                      <>
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <span className="text-xs text-muted-foreground">{audio.durationFormatted}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {currentAudio?.id === audio.id && isPlaying ? (
+                  <Pause className="w-5 h-5 text-accent" />
+                ) : (
+                  <Play className="w-5 h-5 text-muted-foreground" />
+                )}
+              </div>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-12">
+            <Music className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-4">No audio files found</p>
+            <p className="text-sm text-muted-foreground">
+              Click "Scan" in the Folders page to scan your media library
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Content */}
-      <div className="p-6">
-        <div className="space-y-2">
-          {audioData.map((audio) => (
-            <MediaCard
-              key={audio.id}
-              name={audio.name}
-              type={audio.fileType}
-              size={audio.size}
-              duration={audio.duration}
-              onClick={() => {
-                localStorage.setItem("audioPlaying",audio.name);
-                setAudioPlaying(audio.name);
-                setClosedClicked(false);
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* hovering div */}
-
-      {audioPlaying && (
-        <div className={`${isClosed ? 'invisible': 'visible' } fixed bottom-10 rounded-[50px] gap-3 left-[200px] right-[200px] z-50 backdrop-blur-md bg-black/30 border-t border-white/10 shadow-xl  px-4 py-2 flex items-center justify-between`}>
-          <div className="text-white text-sm px-2 font-medium">
-            Now Playing: {audioPlaying}
+      {currentAudio && (
+        <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t border-border">
+          <div className="flex items-center gap-4 p-4">
+            <div className="flex-shrink-0">
+              <Music className="w-8 h-8 text-accent" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">{currentAudio.name}</p>
+              <p className="text-xs text-muted-foreground">{currentAudio.sizeFormatted}</p>
+            </div>
+            <button
+              onClick={togglePlay}
+              className="p-3 bg-accent rounded-full hover:bg-accent/90 transition-colors"
+            >
+              {isPlaying ? (
+                <Pause className="w-5 h-5 text-white" />
+              ) : (
+                <Play className="w-5 h-5 text-white ml-0.5" />
+              )}
+            </button>
+            <button
+              onClick={closePlayer}
+              className="p-2 hover:bg-muted rounded-lg transition-colors"
+            >
+              <span className="text-xl text-muted-foreground">×</span>
+            </button>
           </div>
-          <audio controls ref={audioRef}  key={audioPlaying} className="w-[700px] ">
-            <source src={`${VITE_URL}/stream/audio/${encodeURIComponent(audioPlaying)}`} type="audio/mpeg" />
-            Your browser does not support the audio element.
-          </audio>
-          <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors" onClick={toggleMediaPlayer}>
-            <X className="w-5 h-5 text-gray-300" />
-          </button>
-
-        </div>         
+          <audio
+            ref={audioRef}
+            autoPlay={isPlaying}
+            src={stream.getAudioUrl(currentAudio.name)}
+            className="w-full h-1 accent-accent"
+            onEnded={() => setIsPlaying(false)}
+          />
+        </div>
       )}
- 
-    
     </div>
   );
 }
