@@ -118,10 +118,10 @@ export const user = {
 };
 
 export const stream = {
-  getVideoUrl: (filename) => `${API_BASE}/stream/video/${encodeURIComponent(filename)}`,
-  getAudioUrl: (filename) => `${API_BASE}/stream/audio/${encodeURIComponent(filename)}`,
-  getImageUrl: (filename) => `${API_BASE}/stream/image/${encodeURIComponent(filename)}`,
-  getDocumentUrl: (filename) => `${API_BASE}/stream/document/${encodeURIComponent(filename)}`,
+  getVideoUrl: (filename) => `${API_BASE}/stream/video?path=${encodeURIComponent(filename)}`,
+  getAudioUrl: (filename) => `${API_BASE}/stream/audio?path=${encodeURIComponent(filename)}`,
+  getImageUrl: (filename) => `${API_BASE}/stream/image?path=${encodeURIComponent(filename)}`,
+  getDocumentUrl: (filename) => `${API_BASE}/stream/document?path=${encodeURIComponent(filename)}`,
 };
 
 export { getToken, setToken, removeToken, API_BASE };

@@ -42,21 +42,33 @@ function streamFile(filePath, req, res) {
   }
 }
 
-router.get('/:type/:filename', optionalAuth, (req, res) => {
-  const { type, filename } = req.params;
+router.get('/:type', optionalAuth, (req, res) => {
+  const { type } = req.params;
+  const filePathParam = req.query.path;
   
   const validTypes = ['video', 'audio', 'image', 'document', 'file'];
   if (!validTypes.includes(type)) {
     return res.status(400).json({ error: 'Invalid type' });
   }
 
+  if (!filePathParam) {
+    return res.status(400).json({ error: 'Path parameter required' });
+  }
+
+  const filename = decodeURIComponent(filePathParam);
+  const folderMap = {
+    video: 'videos',
+    audio: 'audio',
+    image: 'images',
+    document: 'documents'
+  };
+
   let filePath;
   if (type === 'file') {
     filePath = path.join(FOLDER_BASE, filename);
-  } else if (type === 'document') {
-    filePath = path.join(FOLDER_BASE, 'documents', filename);
   } else {
-    filePath = path.join(FOLDER_BASE, type + 's', filename);
+    const folder = folderMap[type] || type + 's';
+    filePath = path.join(FOLDER_BASE, folder, filename);
   }
 
   if (!fs.existsSync(filePath)) {
