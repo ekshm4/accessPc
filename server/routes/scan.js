@@ -8,6 +8,8 @@ const router = express.Router();
 
 const FOLDER_BASE = path.join(__dirname, '../folder');
 
+BigInt.prototype.toJSON = function() { return this.toString(); };
+
 const VIDEO_EXTENSIONS = ['mp4', 'mkv', 'webm', 'mov', 'avi', 'flv', 'wmv', 'mpeg', 'mpg', 'm4v', '3gp'];
 const AUDIO_EXTENSIONS = ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a'];
 const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'];
@@ -123,30 +125,34 @@ router.post('/scan', async (req, res) => {
       types: { video: 0, audio: 0, image: 0, document: 0 }
     };
 
-    const categories = ['videos', 'audio', 'images', 'documents'];
-    
-    for (const category of categories) {
-      const categoryPath = path.join(FOLDER_BASE, category);
-      const relativePath = category;
-      
-      if (fs.existsSync(categoryPath)) {
-        let categoryFolder = await prisma.folder.findFirst({
+    if (!fs.existsSync(FOLDER_BASE)) {
+      return res.status(400).json({ error: 'Folder directory not found', path: FOLDER_BASE });
+    }
+
+    const rootEntries = fs.readdirSync(FOLDER_BASE, { withFileTypes: true });
+
+    for (const entry of rootEntries) {
+      if (entry.isDirectory()) {
+        const fullPath = path.join(FOLDER_BASE, entry.name);
+        const relativePath = entry.name;
+
+        let rootFolder = await prisma.folder.findFirst({
           where: { path: relativePath }
         });
 
-        if (!categoryFolder) {
-          categoryFolder = await prisma.folder.create({
+        if (!rootFolder) {
+          rootFolder = await prisma.folder.create({
             data: {
-              name: category,
+              name: entry.name,
               path: relativePath,
               parentId: null
             }
           });
         }
 
-        const categoryStats = await scanDirectory(categoryPath, relativePath, categoryFolder.id);
-        stats.folders += categoryStats.folders;
-        stats.files += categoryStats.files;
+        const folderStats = await scanDirectory(fullPath, relativePath, rootFolder.id);
+        stats.folders += folderStats.folders + 1;
+        stats.files += folderStats.files;
       }
     }
 

@@ -26,7 +26,7 @@ model MediaFile {
   path          String        @unique @db.VarChar(512)
   fileType      String        @db.VarChar(50)
   mimeType      String?       @db.VarChar(100)
-  size          Int
+  size          BigInt
   sizeFormatted String?       @db.VarChar(50)
   duration      Int?
   durationFormatted String?   @db.VarChar(20)
