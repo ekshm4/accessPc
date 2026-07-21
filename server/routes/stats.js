@@ -62,6 +62,7 @@ router.get('/recent', optionalAuth, async (req, res) => {
 });
 
 function formatSize(bytes) {
+  bytes = Number(bytes);
   if (bytes === 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   let i = 0;

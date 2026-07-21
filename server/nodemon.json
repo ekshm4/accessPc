@@ -1,0 +1,6 @@
+{
+  "exec": "node server.js",
+  "ext": "js,json,prisma",
+  "quiet": true,
+  "legacyWatch": true
+}

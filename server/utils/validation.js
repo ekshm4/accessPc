@@ -35,10 +35,11 @@ function validate(schema) {
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errors = error.errors.map(err => ({
+        const errors = error.issues.map(err => ({
           field: err.path.join('.'),
           message: err.message,
         }));
+        console.warn(`Validation failed [${req.method} ${req.path}]:`, JSON.stringify(errors));
         return res.status(400).json({ error: 'Validation failed', details: errors });
       }
       next(error);
